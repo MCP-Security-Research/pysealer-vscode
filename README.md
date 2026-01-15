@@ -1,17 +1,49 @@
 # vurze extension for Visual Studio Code
 
-A Visual Studio Code extension with support for the vurze cryptographic signature tool
+Visual Studio Code extension for [vurze](https://github.com/MCP-Security-Research/vurze) - cryptographically sign your Python functions and classes to detect unauthorized code modifications.
 
-Vurze helps you maintain code integrity by automatically adding cryptographic signatures to your Python functions and classes. Each function or class receives a unique decorator containing a cryptographic signature that verifies both authorship and integrity, making it easy to detect unauthorized code modifications.
+## Overview
 
-## Usage
+Vurze helps you maintain code integrity by automatically adding cryptographic signatures to your Python functions and classes. Each function or class receives a unique `@vurze` decorator containing an Ed25519 cryptographic signature that verifies both authorship and integrity, making it easy to detect unauthorized code modifications.
 
-Vurze will automatically install this extension when you initialize a vurze project by running `vurze init` in your project directory.
+This VS Code extension provides seamless integration with the vurze CLI tool, allowing you to:
 
-If you want to disable Vurze, you can disable this extension per workspace in Visual Studio Code.
+- 🔒 **Lock files** with cryptographic signatures directly from the editor
+- ✅ **Verify integrity** of signed Python code in your workspace
+- 🚨 **Detect tampering** through automatic signature validation
 
-## Settings
+## Features
 
-x
+Whenever a Python file is saved, the vurze locks are automatically added or updated for that file.
 
-x
+### File Locking Command
+
+Right-click any Python file or use the command palette to lock files with vurze signatures:
+
+- **Command**: `Vurze: Lock Current File`
+- Automatically adds locks to all functions and classes in the active Python file
+- Provides instant feedback on success or failure
+
+## Requirements
+
+This extension requires the [vurze CLI tool](https://pypi.org/project/vurze/) to be installed:
+
+```bash
+pip install vurze
+# or
+uv pip install vurze
+```
+
+After installation, initialize vurze in your project:
+
+```bash
+vurze init  # Generates and saves cryptographic keys to .env
+```
+
+## Contributing
+
+Contributions are welcome! If you have suggestions, bug reports, or want to help improve this extension, feel free to open an issue or submit a pull request.
+
+## License
+
+This extension is licensed under the MIT License. See [LICENSE](LICENSE) for details.
