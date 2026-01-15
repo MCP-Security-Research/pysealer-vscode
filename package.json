@@ -1,7 +1,7 @@
 {
   "name": "dyga01",
   "displayName": "vurze",
-  "description": "Cryptographic decorator-based defense-in-depth system for MCP security",
+  "description": "A Visual Studio Code extension with support for the vurze cryptographic signature tool",
   "version": "0.0.1",
   "engines": {
     "vscode": "^1.95.0"
@@ -16,8 +16,8 @@
   "contributes": {
     "commands": [
       {
-        "command": "dyga01.decorateFile",
-        "title": "Vurze: Decorate Current File"
+        "command": "dyga01.lockFile",
+        "title": "Vurze: Lock Current File"
       }
     ]
   },

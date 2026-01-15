@@ -1,7 +1,7 @@
 /**
  * Vurze VS Code Extension
  * 
- * This extension automatically runs the vurze decorate command on Python files
+ * This extension automatically runs the vurze lock command on Python files
  * when they are saved, adding type annotations and decorators to improve code quality.
  */
 
@@ -15,7 +15,7 @@ const execAsync = promisify(exec);
  * Activates the Vurze extension
  * 
  * This function is called when the extension is activated. It registers:
- * 1. A manual command to decorate the current file
+ * 1. A manual command to lock the current file
  * 2. An automatic save handler for Python files
  * 
  * @param context - The extension context provided by VS Code
@@ -23,9 +23,9 @@ const execAsync = promisify(exec);
 export function activate(context: vscode.ExtensionContext) {
     console.log('Vurze extension is now active!');
 
-    // Register command to manually decorate current file
-    // This can be triggered via the command palette: "Vurze: Decorate File"
-    const decorateCommand = vscode.commands.registerCommand('dyga01.decorateFile', async () => {
+    // Register command to manually lock the current file
+    // This can be triggered via the command palette: "Vurze: Lock File"
+    const lockCommand = vscode.commands.registerCommand('dyga01.lockFile', async () => {
         // Get the currently active text editor
         const editor = vscode.window.activeTextEditor;
         if (!editor) {
@@ -39,36 +39,36 @@ export function activate(context: vscode.ExtensionContext) {
             return;
         }
 
-        // Run vurze decorate on the current file
-        await decorateFile(editor.document.uri.fsPath);
+        // Run vurze lock on the current file
+        await lockFile(editor.document.uri.fsPath);
     });
 
-    // Register save handler to automatically decorate Python files
+    // Register save handler to automatically lock Python files
     // This event fires whenever any document is saved in the workspace
     const saveHandler = vscode.workspace.onDidSaveTextDocument(async (document) => {
         // Only process Python files
         if (document.languageId === 'python') {
-            await decorateFile(document.uri.fsPath);
+            await lockFile(document.uri.fsPath);
         }
     });
 
     // Add the command and save handler to the extension's subscriptions
     // This ensures they are properly disposed when the extension is deactivated
-    context.subscriptions.push(decorateCommand, saveHandler);
+    context.subscriptions.push(lockCommand, saveHandler);
 }
 
 /**
- * Decorates a Python file using the vurze CLI tool
+ * Locks a Python file using the vurze CLI tool
  * 
- * This function executes the vurze decorate command on the specified file,
+ * This function executes the vurze lock command on the specified file,
  * displays status in the status bar, and handles any errors that occur.
  * 
- * @param filePath - The absolute file system path to the Python file to decorate
+ * @param filePath - The absolute file system path to the Python file to lock
  */
-async function decorateFile(filePath: string): Promise<void> {
+async function lockFile(filePath: string): Promise<void> {
     // Create and show a status bar item to indicate progress
     const statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left);
-    statusBarItem.text = '$(sync~spin) Running vurze decorate...'; // $(sync~spin) is a spinning icon
+    statusBarItem.text = '$(sync~spin) Running vurze lock...'; // $(sync~spin) is a spinning icon
     statusBarItem.show();
 
     try {
@@ -77,11 +77,11 @@ async function decorateFile(filePath: string): Promise<void> {
         const workspaceFolder = vscode.workspace.getWorkspaceFolder(vscode.Uri.file(filePath));
         const cwd = workspaceFolder?.uri.fsPath || vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
         
-        // Execute the vurze decorate command on the file
-        const { stdout, stderr } = await execAsync(`vurze decorate "${filePath}"`, { cwd });
+        // Execute the vurze lock command on the file
+        const { stdout, stderr } = await execAsync(`vurze lock "${filePath}"`, { cwd });
         
         // Update status bar to show success and auto-hide after 3 seconds
-        statusBarItem.text = '$(check) Vurze decorators applied';
+        statusBarItem.text = '$(check) Vurze locks applied';
         setTimeout(() => statusBarItem.dispose(), 3000);
 
         // Log command output for debugging purposes
@@ -103,7 +103,7 @@ async function decorateFile(filePath: string): Promise<void> {
             // Show other errors from vurze execution
             vscode.window.showErrorMessage(`Vurze error: ${error.message}`);
         }
-        console.error('Vurze decoration failed:', error);
+        console.error('Vurze locks failed:', error);
     }
 }
 
