@@ -3,6 +3,11 @@
   "displayName": "vurze",
   "description": "A Visual Studio Code extension with support for the vurze cryptographic signature tool",
   "version": "0.0.1",
+  "publisher": "vurze",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/MCP-Security-Research/vurze-vscode.git"
+  },
   "engines": {
     "vscode": "^1.95.0"
   },
@@ -27,16 +32,18 @@
     "watch": "tsc -watch -p ./",
     "pretest": "npm run compile && npm run lint",
     "lint": "eslint src",
-    "test": "vscode-test"
+    "test": "vscode-test",
+    "deploy": "vsce publish"
   },
   "devDependencies": {
-    "@types/vscode": "^1.108.1",
     "@types/mocha": "^10.0.10",
     "@types/node": "22.x",
-    "typescript-eslint": "^8.52.0",
+    "@types/vscode": "^1.108.1",
+    "@vscode/test-cli": "^0.0.12",
+    "@vscode/test-electron": "^2.5.2",
+    "@vscode/vsce": "^3.7.1",
     "eslint": "^9.39.2",
     "typescript": "^5.9.3",
-    "@vscode/test-cli": "^0.0.12",
-    "@vscode/test-electron": "^2.5.2"
+    "typescript-eslint": "^8.52.0"
   }
 }
