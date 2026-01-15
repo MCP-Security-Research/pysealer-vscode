@@ -39,7 +39,11 @@ async function decorateFile(filePath: string): Promise<void> {
     statusBarItem.show();
 
     try {
-        const { stdout, stderr } = await execAsync(`vurze decorate "${filePath}"`);
+        // Get workspace folder for the file to set correct working directory
+        const workspaceFolder = vscode.workspace.getWorkspaceFolder(vscode.Uri.file(filePath));
+        const cwd = workspaceFolder?.uri.fsPath || vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
+        
+        const { stdout, stderr } = await execAsync(`vurze decorate "${filePath}"`, { cwd });
         
         statusBarItem.text = '$(check) Vurze decorators applied';
         setTimeout(() => statusBarItem.dispose(), 3000);
