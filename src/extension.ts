@@ -25,7 +25,7 @@ export function activate(context: vscode.ExtensionContext) {
 
     // Register command to manually lock the current file
     // This can be triggered via the command palette: "Pysealer: Lock File"
-    const lockCommand = vscode.commands.registerCommand('dyga01.lockFile', async () => {
+    const lockCommand = vscode.commands.registerCommand('pysealer.lockFile', async () => {
         // Get the currently active text editor
         const editor = vscode.window.activeTextEditor;
         if (!editor) {
