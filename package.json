@@ -2,7 +2,7 @@
   "name": "pysealer-vscode",
   "displayName": "pysealer",
   "description": "A Visual Studio Code extension with support for the pysealer cryptographic signature tool",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "publisher": "pysealer",
   "icon": "icon.png",
   "license": "MIT",
