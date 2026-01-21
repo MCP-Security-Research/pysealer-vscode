@@ -1,12 +1,12 @@
 {
   "name": "dyga01",
-  "displayName": "vurze",
-  "description": "A Visual Studio Code extension with support for the vurze cryptographic signature tool",
+  "displayName": "pysealer",
+  "description": "A Visual Studio Code extension with support for the pysealer cryptographic signature tool",
   "version": "0.0.1",
-  "publisher": "vurze",
+  "publisher": "pysealer",
   "repository": {
     "type": "git",
-    "url": "https://github.com/MCP-Security-Research/vurze-vscode.git"
+    "url": "https://github.com/MCP-Security-Research/pysealer-vscode.git"
   },
   "engines": {
     "vscode": "^1.95.0"
@@ -22,7 +22,7 @@
     "commands": [
       {
         "command": "dyga01.lockFile",
-        "title": "Vurze: Lock Current File"
+        "title": "Pysealer: Lock Current File"
       }
     ]
   },

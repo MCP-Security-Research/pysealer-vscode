@@ -1,7 +1,7 @@
 /**
- * Vurze VS Code Extension
+ * Pysealer VS Code Extension
  * 
- * This extension automatically runs the vurze lock command on Python files
+ * This extension automatically runs the pysealer lock command on Python files
  * when they are saved, adding type annotations and decorators to improve code quality.
  */
 
@@ -12,7 +12,7 @@ import { promisify } from 'util';
 const execAsync = promisify(exec);
 
 /**
- * Activates the Vurze extension
+ * Activates the Pysealer extension
  * 
  * This function is called when the extension is activated. It registers:
  * 1. A manual command to lock the current file
@@ -21,10 +21,10 @@ const execAsync = promisify(exec);
  * @param context - The extension context provided by VS Code
  */
 export function activate(context: vscode.ExtensionContext) {
-    console.log('Vurze extension is now active!');
+    console.log('Pysealer extension is now active!');
 
     // Register command to manually lock the current file
-    // This can be triggered via the command palette: "Vurze: Lock File"
+    // This can be triggered via the command palette: "Pysealer: Lock File"
     const lockCommand = vscode.commands.registerCommand('dyga01.lockFile', async () => {
         // Get the currently active text editor
         const editor = vscode.window.activeTextEditor;
@@ -39,7 +39,7 @@ export function activate(context: vscode.ExtensionContext) {
             return;
         }
 
-        // Run vurze lock on the current file
+        // Run pysealer lock on the current file
         await lockFile(editor.document.uri.fsPath);
     });
 
@@ -58,9 +58,9 @@ export function activate(context: vscode.ExtensionContext) {
 }
 
 /**
- * Locks a Python file using the vurze CLI tool
+ * Locks a Python file using the pysealer CLI tool
  * 
- * This function executes the vurze lock command on the specified file,
+ * This function executes the pysealer lock command on the specified file,
  * displays status in the status bar, and handles any errors that occur.
  * 
  * @param filePath - The absolute file system path to the Python file to lock
@@ -68,42 +68,42 @@ export function activate(context: vscode.ExtensionContext) {
 async function lockFile(filePath: string): Promise<void> {
     // Create and show a status bar item to indicate progress
     const statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left);
-    statusBarItem.text = '$(sync~spin) Running vurze lock...'; // $(sync~spin) is a spinning icon
+    statusBarItem.text = '$(sync~spin) Running pysealer lock...'; // $(sync~spin) is a spinning icon
     statusBarItem.show();
 
     try {
         // Get workspace folder for the file to set correct working directory
-        // This ensures vurze runs in the project root where dependencies are installed
+        // This ensures pysealer runs in the project root where dependencies are installed
         const workspaceFolder = vscode.workspace.getWorkspaceFolder(vscode.Uri.file(filePath));
         const cwd = workspaceFolder?.uri.fsPath || vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
         
-        // Execute the vurze lock command on the file
-        const { stdout, stderr } = await execAsync(`vurze lock "${filePath}"`, { cwd });
+        // Execute the pysealer lock command on the file
+        const { stdout, stderr } = await execAsync(`pysealer lock "${filePath}"`, { cwd });
         
         // Update status bar to show success and auto-hide after 3 seconds
-        statusBarItem.text = '$(check) Vurze locks applied';
+        statusBarItem.text = '$(check) Pysealer locks applied';
         setTimeout(() => statusBarItem.dispose(), 3000);
 
         // Log command output for debugging purposes
         if (stdout) {
-            console.log('Vurze output:', stdout);
+            console.log('Pysealer output:', stdout);
         }
         if (stderr) {
-            console.warn('Vurze warnings:', stderr);
+            console.warn('Pysealer warnings:', stderr);
         }
     } catch (error: any) {
         // Clean up status bar item on error
         statusBarItem.dispose();
         
         // Provide user-friendly error messages
-        // Check if vurze is not installed
+        // Check if pysealer is not installed
         if (error.message.includes('command not found') || error.message.includes('not recognized')) {
-            vscode.window.showErrorMessage('Vurze is not installed. Please run: pip install vurze');
+            vscode.window.showErrorMessage('Pysealer is not installed. Please run: pip install pysealer');
         } else {
-            // Show other errors from vurze execution
-            vscode.window.showErrorMessage(`Vurze error: ${error.message}`);
+            // Show other errors from pysealer execution
+            vscode.window.showErrorMessage(`Pysealer error: ${error.message}`);
         }
-        console.error('Vurze locks failed:', error);
+        console.error('Pysealer locks failed:', error);
     }
 }
 
