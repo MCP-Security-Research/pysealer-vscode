@@ -1,5 +1,5 @@
 {
-  "name": "dyga01",
+  "name": "pysealer-vscode",
   "displayName": "pysealer",
   "description": "A Visual Studio Code extension with support for the pysealer cryptographic signature tool",
   "version": "0.0.1",
@@ -21,7 +21,7 @@
   "contributes": {
     "commands": [
       {
-        "command": "dyga01.lockFile",
+        "command": "pysealer.lockFile",
         "title": "Pysealer: Lock Current File"
       }
     ]
