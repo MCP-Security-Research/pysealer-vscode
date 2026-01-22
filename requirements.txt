@@ -1,0 +1,6 @@
+# Pysealer and its dependencies for bundling with the VS Code extension
+# This file is used during the build process to install packages into bundled/libs/
+
+# Pysealer - the main tool
+# Update this version as needed to match your target pysealer version
+pysealer>=0.1.4

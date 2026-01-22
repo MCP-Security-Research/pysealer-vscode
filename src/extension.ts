@@ -8,6 +8,8 @@
 import * as vscode from 'vscode';
 import { exec } from 'child_process';
 import { promisify } from 'util';
+import * as path from 'path';
+import * as fs from 'fs';
 
 const execAsync = promisify(exec);
 
@@ -20,7 +22,11 @@ const execAsync = promisify(exec);
  * 
  * @param context - The extension context provided by VS Code
  */
+// Store extension context globally for access in helper functions
+let extensionContext: vscode.ExtensionContext;
+
 export function activate(context: vscode.ExtensionContext) {
+    extensionContext = context;
     console.log('Pysealer extension is now active!');
 
     // Register command to manually lock the current file
@@ -77,8 +83,12 @@ async function lockFile(filePath: string): Promise<void> {
         const workspaceFolder = vscode.workspace.getWorkspaceFolder(vscode.Uri.file(filePath));
         const cwd = workspaceFolder?.uri.fsPath || vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
         
-        // Execute the pysealer lock command on the file
-        const { stdout, stderr } = await execAsync(`pysealer lock "${filePath}"`, { cwd });
+        // Get Python interpreter and bundled pysealer
+        const pythonPath = await getPythonPath();
+        const pysealerCommand = getBundledPysealerCommand(pythonPath, filePath);
+        
+        // Execute the pysealer lock command on the file using bundled version
+        const { stdout, stderr } = await execAsync(pysealerCommand, { cwd });
         
         // Update status bar to show success and auto-hide after 3 seconds
         statusBarItem.text = '$(check) Pysealer locks applied';
@@ -96,15 +106,83 @@ async function lockFile(filePath: string): Promise<void> {
         statusBarItem.dispose();
         
         // Provide user-friendly error messages
-        // Check if pysealer is not installed
-        if (error.message.includes('command not found') || error.message.includes('not recognized')) {
-            vscode.window.showErrorMessage('Pysealer is not installed. Please run: pip install pysealer');
+        if (error.message.includes('python') || error.message.includes('Python')) {
+            vscode.window.showErrorMessage('Python is not installed or not found in PATH. Please install Python 3.8 or later.');
+        } else if (error.message.includes('Could not import pysealer')) {
+            vscode.window.showErrorMessage('Pysealer bundled libraries are missing. Please reinstall the extension.');
         } else {
             // Show other errors from pysealer execution
             vscode.window.showErrorMessage(`Pysealer error: ${error.message}`);
         }
         console.error('Pysealer locks failed:', error);
     }
+}
+
+/**
+ * Gets the Python interpreter path
+ * 
+ * Tries to find Python in this order:
+ * 1. Python extension's configured interpreter
+ * 2. python3 command
+ * 3. python command
+ * 
+ * @returns The path to the Python interpreter
+ */
+async function getPythonPath(): Promise<string> {
+    // Try to get Python path from Python extension
+    try {
+        const pythonExtension = vscode.extensions.getExtension('ms-python.python');
+        if (pythonExtension) {
+            if (!pythonExtension.isActive) {
+                await pythonExtension.activate();
+            }
+            const pythonPath = pythonExtension.exports?.settings?.getExecutionDetails?.()?.execCommand?.[0];
+            if (pythonPath) {
+                return pythonPath;
+            }
+        }
+    } catch (error) {
+        console.warn('Could not get Python path from Python extension:', error);
+    }
+    
+    // Fallback: try python3, then python
+    try {
+        await execAsync('python3 --version');
+        return 'python3';
+    } catch {
+        try {
+            await execAsync('python --version');
+            return 'python';
+        } catch {
+            // If neither works, default to python3 and let the error handler catch it
+            return 'python3';
+        }
+    }
+}
+
+/**
+ * Constructs the command to run bundled pysealer
+ * 
+ * @param pythonPath - Path to the Python interpreter
+ * @param filePath - Path to the file to lock
+ * @returns The complete command string to execute
+ */
+function getBundledPysealerCommand(pythonPath: string, filePath: string): string {
+    // Get path to bundled server.py
+    const serverPath = path.join(extensionContext.extensionPath, 'bundled', 'tool', 'server.py');
+    
+    // Check if bundled version exists
+    if (!fs.existsSync(serverPath)) {
+        throw new Error('Bundled pysealer not found. Please reinstall the extension.');
+    }
+    
+    // Construct command with proper quoting for cross-platform support
+    // Using double quotes for paths handles spaces correctly on all platforms
+    const quotedPythonPath = pythonPath.includes(' ') ? `"${pythonPath}"` : pythonPath;
+    const quotedServerPath = `"${serverPath}"`;
+    const quotedFilePath = `"${filePath}"`;
+    
+    return `${quotedPythonPath} ${quotedServerPath} lock ${quotedFilePath}`;
 }
 
 /**

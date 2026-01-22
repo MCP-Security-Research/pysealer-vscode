@@ -9,3 +9,8 @@ vsc-extension-quickstart.md
 **/*.map
 **/*.ts
 **/.vscode-test.*
+scripts/**
+requirements.txt
+# Include bundled directory in package
+# The ! is a negation - it means "include this even if something else excluded it"
+!bundled/**
