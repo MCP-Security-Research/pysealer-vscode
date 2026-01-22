@@ -26,19 +26,17 @@ Right-click any Python file or use the command palette to lock files with pyseal
 
 ## Requirements
 
-This extension requires the [pysealer CLI tool](https://pypi.org/project/pysealer/) to be installed:
+This extension bundles the pysealer CLI tool with support for **Python 3.10, 3.11, 3.12, and 3.13**.
+
+**No additional installation required!** The extension includes pysealer and works out of the box.
+
+Before using the extension, initialize pysealer in your project:
 
 ```bash
-pip install pysealer
-# or
-uv pip install pysealer
+python -m pysealer init  # Generates and saves cryptographic keys to .env
 ```
 
-After installation, initialize pysealer in your project:
-
-```bash
-pysealer init  # Generates and saves cryptographic keys to .env
-```
+Or use the command palette: `Pysealer: Initialize Project`
 
 ## Contributing
 
