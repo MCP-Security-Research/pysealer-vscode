@@ -49,6 +49,20 @@ export function activate(context: vscode.ExtensionContext) {
         await lockFile(editor.document.uri.fsPath);
     });
 
+    // Register command to init the project
+    // This can be triggered via the command palette: "Pysealer: Init Project"
+    const initCommand = vscode.commands.registerCommand('pysealer.initProject', async () => {
+        // Get the workspace folder
+        const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
+        if (!workspaceFolder) {
+            vscode.window.showErrorMessage('No workspace folder open');
+            return;
+        }
+
+        // Run pysealer init on the workspace
+        await initProject(workspaceFolder.uri.fsPath);
+    });
+
     // Register save handler to automatically lock Python files
     // This event fires whenever any document is saved in the workspace
     const saveHandler = vscode.workspace.onDidSaveTextDocument(async (document) => {
@@ -60,7 +74,7 @@ export function activate(context: vscode.ExtensionContext) {
 
     // Add the command and save handler to the extension's subscriptions
     // This ensures they are properly disposed when the extension is deactivated
-    context.subscriptions.push(lockCommand, saveHandler);
+    context.subscriptions.push(lockCommand, initCommand, saveHandler);
 }
 
 /**
@@ -119,6 +133,56 @@ async function lockFile(filePath: string): Promise<void> {
 }
 
 /**
+ * Initializes a project with pysealer cryptographic keys
+ * 
+ * This function executes the pysealer init command on the project,
+ * displays status in the status bar, and handles any errors that occur.
+ * 
+ * @param projectPath - The absolute file system path to the project directory
+ */
+async function initProject(projectPath: string): Promise<void> {
+    // Create and show a status bar item to indicate progress
+    const statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left);
+    statusBarItem.text = '$(sync~spin) Running pysealer init...'; // $(sync~spin) is a spinning icon
+    statusBarItem.show();
+
+    try {
+        // Get Python interpreter and bundled pysealer
+        const pythonPath = await getPythonPath();
+        const pysealerCommand = getBundledPysealerCommand(pythonPath, projectPath, 'init');
+        
+        // Execute the pysealer init command on the project using bundled version
+        const { stdout, stderr } = await execAsync(pysealerCommand, { cwd: projectPath });
+        
+        // Update status bar to show success and auto-hide after 3 seconds
+        statusBarItem.text = '$(check) Pysealer init applied';
+        setTimeout(() => statusBarItem.dispose(), 3000);
+
+        // Log command output for debugging purposes
+        if (stdout) {
+            console.log('Pysealer output:', stdout);
+        }
+        if (stderr) {
+            console.warn('Pysealer warnings:', stderr);
+        }
+    } catch (error: any) {
+        // Clean up status bar item on error
+        statusBarItem.dispose();
+        
+        // Provide user-friendly error messages
+        if (error.message.includes('python') || error.message.includes('Python')) {
+            vscode.window.showErrorMessage('Python is not installed or not found in PATH. Please install Python 3.8 or later.');
+        } else if (error.message.includes('Could not import pysealer')) {
+            vscode.window.showErrorMessage('Pysealer bundled libraries are missing. Please reinstall the extension.');
+        } else {
+            // Show other errors from pysealer execution
+            vscode.window.showErrorMessage(`Pysealer error: ${error.message}`);
+        }
+        console.error('Pysealer init failed:', error);
+    }
+}
+
+/**
  * Gets the Python interpreter path
  * 
  * Tries to find Python in this order:
@@ -164,10 +228,11 @@ async function getPythonPath(): Promise<string> {
  * Constructs the command to run bundled pysealer
  * 
  * @param pythonPath - Path to the Python interpreter
- * @param filePath - Path to the file to lock
+ * @param targetPath - Path to the file (for lock) or directory (for init)
+ * @param command - The pysealer command to run (lock or init)
  * @returns The complete command string to execute
  */
-function getBundledPysealerCommand(pythonPath: string, filePath: string): string {
+function getBundledPysealerCommand(pythonPath: string, targetPath: string, command: string = 'lock'): string {
     // Get path to bundled server.py
     const serverPath = path.join(extensionContext.extensionPath, 'bundled', 'tool', 'server.py');
     
@@ -180,9 +245,15 @@ function getBundledPysealerCommand(pythonPath: string, filePath: string): string
     // Using double quotes for paths handles spaces correctly on all platforms
     const quotedPythonPath = pythonPath.includes(' ') ? `"${pythonPath}"` : pythonPath;
     const quotedServerPath = `"${serverPath}"`;
-    const quotedFilePath = `"${filePath}"`;
     
-    return `${quotedPythonPath} ${quotedServerPath} lock ${quotedFilePath}`;
+    // init command doesn't take a path argument - it works on current directory
+    if (command === 'init') {
+        return `${quotedPythonPath} ${quotedServerPath} ${command}`;
+    }
+    
+    // lock command requires a file path
+    const quotedTargetPath = `"${targetPath}"`;
+    return `${quotedPythonPath} ${quotedServerPath} ${command} ${quotedTargetPath}`;
 }
 
 /**
@@ -193,3 +264,4 @@ function getBundledPysealerCommand(pythonPath: string, filePath: string): string
  * of all subscriptions added to context.subscriptions.
  */
 export function deactivate() {}
+

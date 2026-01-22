@@ -24,6 +24,10 @@
   "contributes": {
     "commands": [
       {
+        "command": "pysealer.initProject",
+        "title": "Pysealer: Initialize Pysealer Project"
+      },
+      {
         "command": "pysealer.lockFile",
         "title": "Pysealer: Lock Current File"
       }
