@@ -181,17 +181,14 @@ async function lockFile(filePath: string): Promise<void> {
  * Initialize Project Operation
  * 
  * Executes pysealer init on the project directory. This sets up cryptographic
- * keys needed for the locking process. After initialization, automatically
- * locks all Python files in the project directory.
+ * keys needed for the locking process.
  * 
  * PROCESS:
  * 1. Shows status indicator in status bar
  * 2. Resolves Python interpreter path
  * 3. Constructs init command using bundled pysealer
  * 4. Executes command in project directory
- * 5. Finds all Python files in the project
- * 6. Locks each Python file to add decorators
- * 7. Displays result (success or error)
+ * 5. Displays result (success or error)
  * 
  * @param projectPath - Absolute path to the project directory
  */
@@ -208,49 +205,13 @@ async function initProject(projectPath: string): Promise<void> {
         // Execute pysealer init
         const { stdout, stderr } = await execAsync(pysealerCommand, { cwd: projectPath });
         
-        // Log init output for debugging
-        if (stdout) { console.log('Pysealer init output:', stdout); }
-        if (stderr) { console.warn('Pysealer init warnings:', stderr); }
-        
-        // Show success for init
-        statusBarItem.text = '$(check) Pysealer init complete, locking files...';
-        
-        // Find all Python files in the project directory
-        const pythonFiles = await findPythonFiles(projectPath);
-        
-        if (pythonFiles.length === 0) {
-            statusBarItem.text = '$(check) Pysealer init complete (no Python files found)';
-            setTimeout(() => statusBarItem.dispose(), 3000);
-            vscode.window.showInformationMessage('Pysealer project initialized successfully. No Python files found to lock.');
-            return;
-        }
-        
-        // Lock all Python files
-        let lockedCount = 0;
-        let failedCount = 0;
-        
-        for (const filePath of pythonFiles) {
-            try {
-                statusBarItem.text = `$(sync~spin) Locking ${lockedCount + 1}/${pythonFiles.length} files...`;
-                const lockCommand = getBundledPysealerCommand(pythonPath, filePath, 'lock');
-                await execAsync(lockCommand, { cwd: projectPath });
-                lockedCount++;
-            } catch (error) {
-                console.error(`Failed to lock ${filePath}:`, error);
-                failedCount++;
-            }
-        }
-        
-        // Show final status
-        if (failedCount === 0) {
-            statusBarItem.text = `$(check) Pysealer init complete, locked ${lockedCount} files`;
-            vscode.window.showInformationMessage(`Pysealer project initialized and ${lockedCount} Python files locked successfully!`);
-        } else {
-            statusBarItem.text = `$(warning) Locked ${lockedCount} files, ${failedCount} failed`;
-            vscode.window.showWarningMessage(`Pysealer init complete: ${lockedCount} files locked, ${failedCount} failed.`);
-        }
-        
-        setTimeout(() => statusBarItem.dispose(), 5000);
+        // Show success status (auto-hide after 3 seconds)
+        statusBarItem.text = '$(check) Pysealer init applied';
+        setTimeout(() => statusBarItem.dispose(), 3000);
+
+        // Log output for debugging
+        if (stdout) { console.log('Pysealer output:', stdout); }
+        if (stderr) { console.warn('Pysealer warnings:', stderr); }
         
     } catch (error: any) {
         statusBarItem.dispose();
@@ -348,44 +309,6 @@ function handlePysealerError(error: any, operation: string): void {
 // =============================================================================
 // UTILITY FUNCTIONS
 // =============================================================================
-
-/**
- * Find All Python Files
- * 
- * Recursively searches for all Python files (.py) in the specified directory.
- * Excludes common directories that shouldn't be locked (venv, node_modules, etc).
- * 
- * @param rootPath - Root directory to search from
- * @returns Array of absolute paths to Python files
- */
-async function findPythonFiles(rootPath: string): Promise<string[]> {
-    const pythonFiles: string[] = [];
-    const excludeDirs = ['venv', '.venv', 'node_modules', '__pycache__', '.git', 'dist', 'build', '.tox', '.pytest_cache'];
-    
-    async function searchDirectory(dirPath: string): Promise<void> {
-        try {
-            const entries = await fs.promises.readdir(dirPath, { withFileTypes: true });
-            
-            for (const entry of entries) {
-                const fullPath = path.join(dirPath, entry.name);
-                
-                if (entry.isDirectory()) {
-                    // Skip excluded directories
-                    if (!excludeDirs.includes(entry.name)) {
-                        await searchDirectory(fullPath);
-                    }
-                } else if (entry.isFile() && entry.name.endsWith('.py')) {
-                    pythonFiles.push(fullPath);
-                }
-            }
-        } catch (error) {
-            console.warn(`Could not read directory ${dirPath}:`, error);
-        }
-    }
-    
-    await searchDirectory(rootPath);
-    return pythonFiles;
-}
 
 /**
  * Resolve Python Interpreter Path
