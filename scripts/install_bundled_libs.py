@@ -4,7 +4,7 @@ Cross-platform script to install Python dependencies into bundled/libs directory
 
 This script handles installing pysealer and its dependencies into the extension's
 bundle directory. Since pysealer contains compiled binaries, we download wheels
-for all platforms (Linux, macOS, Windows) and Python versions (3.10-3.13), then
+for all platforms (Linux, macOS, Windows) and Python versions (3.10-3.14), then
 extract the pysealer module so it can be used regardless of the user's Python version.
 """
 
@@ -23,8 +23,8 @@ PLATFORMS = [
     "win_amd64",             # Windows x86_64
 ]
 
-# Python versions to support (3.10 through 3.13)
-PYTHON_VERSIONS = ["310", "311", "312", "313"]
+# Python versions to support (3.10 through 3.14)
+PYTHON_VERSIONS = ["310", "311", "312", "313", "314"]
 
 def install_pure_python_packages(bundled_libs, requirements_file):
     """Install pure Python packages (non-compiled) normally."""
@@ -127,7 +127,7 @@ def main():
         print(f"✓ Packages installed to: {bundled_libs}")
         print("✓ Platform-specific wheels downloaded for:")
         print(f"  - Platforms: Linux, macOS (Intel & ARM), Windows")
-        print(f"  - Python versions: 3.10, 3.11, 3.12, 3.13")
+        print(f"  - Python versions: 3.10, 3.11, 3.12, 3.13, 3.14")
         print("="*60)
         
     except subprocess.CalledProcessError as e:
