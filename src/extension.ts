@@ -25,7 +25,8 @@ import * as vscode from 'vscode';
 import {
     registerLockFileCommand,
     registerCheckFileCommand,
-    registerInitProjectCommand
+    registerInitProjectCommand,
+    registerRemoveFileCommand
 } from './commands';
 import { registerAutoLockHandler } from './events/autoLock';
 import { initializePysealerUtils } from './utils/pysealer';
@@ -48,6 +49,7 @@ export function activate(context: vscode.ExtensionContext) {
     registerLockFileCommand(context);
     registerCheckFileCommand(context);
     registerInitProjectCommand(context);
+    registerRemoveFileCommand(context);
 
     // Register event handlers
     registerAutoLockHandler(context);
