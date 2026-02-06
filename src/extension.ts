@@ -61,6 +61,7 @@ let extensionContext: vscode.ExtensionContext;
  * 
  * REGISTERED COMMANDS:
  * - pysealer.lockFile: Manually lock the current Python file
+ * - pysealer.checkFile: Check the current Python file for issues
  * - pysealer.initProject: Initialize project with cryptographic keys
  * 
  * EVENT HANDLERS:
@@ -92,6 +93,25 @@ export function activate(context: vscode.ExtensionContext) {
     });
 
     // -------------------------------------------------------------------------
+    // Command: Check File
+    // -------------------------------------------------------------------------
+    // Allows users to check a Python file for issues without modifying it
+    const checkCommand = vscode.commands.registerCommand('pysealer.checkFile', async () => {
+        const editor = vscode.window.activeTextEditor;
+        if (!editor) {
+            vscode.window.showErrorMessage('No active editor');
+            return;
+        }
+
+        if (editor.document.languageId !== 'python') {
+            vscode.window.showErrorMessage('This command only works with Python files');
+            return;
+        }
+
+        await checkFile(editor.document.uri.fsPath);
+    });
+
+    // -------------------------------------------------------------------------
     // Command: Project Initialization
     // -------------------------------------------------------------------------
     // Sets up cryptographic keys for the project
@@ -116,7 +136,7 @@ export function activate(context: vscode.ExtensionContext) {
     });
 
     // Register all disposables for proper cleanup
-    context.subscriptions.push(lockCommand, initCommand, saveHandler);
+    context.subscriptions.push(lockCommand, checkCommand, initCommand, saveHandler);
 }
 
 /**
@@ -178,6 +198,55 @@ async function lockFile(filePath: string): Promise<void> {
 }
 
 /**
+ * Check File Operation
+ * 
+ * Executes pysealer check on a specific Python file. This analyzes the file
+ * for issues without modifying it.
+ * 
+ * PROCESS:
+ * 1. Shows status indicator in status bar
+ * 2. Resolves Python interpreter path
+ * 3. Constructs command using bundled pysealer
+ * 4. Executes command in workspace context
+ * 5. Displays result (success or error)
+ * 
+ * @param filePath - Absolute path to the Python file to check
+ */
+async function checkFile(filePath: string): Promise<void> {
+    const statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left);
+    statusBarItem.text = '$(sync~spin) Running pysealer check...';
+    statusBarItem.show();
+
+    try {
+        // Determine working directory from workspace context
+        const workspaceFolder = vscode.workspace.getWorkspaceFolder(vscode.Uri.file(filePath));
+        const cwd = workspaceFolder?.uri.fsPath || vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
+        
+        // Resolve Python interpreter and construct command
+        const pythonPath = await getPythonPath();
+        const pysealerCommand = getBundledPysealerCommand(pythonPath, filePath, 'check');
+        
+        // Execute pysealer check
+        const { stdout, stderr } = await execAsync(pysealerCommand, { cwd });
+        
+        // Show success status (auto-hide after 3 seconds)
+        statusBarItem.text = '$(check) Pysealer check complete';
+        setTimeout(() => statusBarItem.dispose(), 3000);
+
+        // Display check results to user
+        if (stdout) {
+            vscode.window.showInformationMessage(`Pysealer check: ${stdout.trim()}`);
+            console.log('Pysealer output:', stdout);
+        }
+        if (stderr) { console.warn('Pysealer warnings:', stderr); }
+        
+    } catch (error: any) {
+        statusBarItem.dispose();
+        handlePysealerError(error, 'check');
+    }
+}
+
+/**
  * Initialize Project Operation
  * 
  * Executes pysealer init on the project directory. This sets up cryptographic
@@ -231,11 +300,12 @@ async function initProject(projectPath: string): Promise<void> {
  * 
  * COMMAND FORMAT:
  * - Lock: <python> <server.py> lock <filePath>
+ * - Check: <python> <server.py> check <filePath>
  * - Init: <python> <server.py> init
  * 
  * @param pythonPath - Path to Python interpreter
- * @param targetPath - Path to file (lock) or directory (init)
- * @param command - Pysealer command: 'lock' (default) or 'init'
+ * @param targetPath - Path to file (lock/check) or directory (init)
+ * @param command - Pysealer command: 'lock' (default), 'check', or 'init'
  * @returns Complete command string ready for execution
  * @throws Error if bundled server.py not found
  */
@@ -256,7 +326,7 @@ function getBundledPysealerCommand(pythonPath: string, targetPath: string, comma
         return `${quotedPythonPath} ${quotedServerPath} ${command}`;
     }
     
-    // Lock command requires file path argument
+    // Lock and check commands require file path argument
     const quotedTargetPath = `"${targetPath}"`;
     return `${quotedPythonPath} ${quotedServerPath} ${command} ${quotedTargetPath}`;
 }
@@ -273,7 +343,7 @@ function getBundledPysealerCommand(pythonPath: string, targetPath: string, comma
  * - Other: Generic pysealer execution errors
  * 
  * @param error - The error object from execution
- * @param operation - The operation that failed ('locks' or 'init')
+ * @param operation - The operation that failed ('locks', 'check', or 'init')
  */
 function handlePysealerError(error: any, operation: string): void {
     const errorMessage = error.message || '';
