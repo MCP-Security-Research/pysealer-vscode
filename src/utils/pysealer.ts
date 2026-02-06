@@ -31,15 +31,23 @@ export function initializePysealerUtils(context: vscode.ExtensionContext): void 
  * COMMAND FORMAT:
  * - Lock: <python> <server.py> lock <filePath>
  * - Check: <python> <server.py> check <filePath>
- * - Init: <python> <server.py> init
+ * - Init: <python> <server.py> init [envFile] [--github-token <token>]
  * 
  * @param pythonPath - Path to Python interpreter
  * @param targetPath - Path to file (lock/check) or directory (init)
  * @param command - Pysealer command: 'lock' (default), 'check', or 'init'
+ * @param envFilePath - Optional path to .env file (init only)
+ * @param githubToken - Optional GitHub token (init only)
  * @returns Complete command string ready for execution
  * @throws Error if bundled server.py not found
  */
-export function getBundledPysealerCommand(pythonPath: string, targetPath: string, command: string = 'lock'): string {
+export function getBundledPysealerCommand(
+    pythonPath: string, 
+    targetPath: string, 
+    command: string = 'lock',
+    envFilePath?: string,
+    githubToken?: string
+): string {
     if (!extensionContext) {
         throw new Error('Pysealer utils not initialized. Call initializePysealerUtils first.');
     }
@@ -55,9 +63,22 @@ export function getBundledPysealerCommand(pythonPath: string, targetPath: string
     const quotedPythonPath = pythonPath.includes(' ') ? `"${pythonPath}"` : pythonPath;
     const quotedServerPath = `"${serverPath}"`;
     
-    // Init command works on current directory (no path argument)
+    // Init command with optional parameters
     if (command === 'init') {
-        return `${quotedPythonPath} ${quotedServerPath} ${command}`;
+        let initCommand = `${quotedPythonPath} ${quotedServerPath} ${command}`;
+        
+        // Add optional env file path
+        if (envFilePath) {
+            const quotedEnvPath = `"${envFilePath}"`;
+            initCommand += ` ${quotedEnvPath}`;
+        }
+        
+        // Add optional GitHub token
+        if (githubToken) {
+            initCommand += ` --github-token "${githubToken}"`;
+        }
+        
+        return initCommand;
     }
     
     // Lock and check commands require file path argument
