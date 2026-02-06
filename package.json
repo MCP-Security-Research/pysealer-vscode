@@ -35,6 +35,10 @@
       {
         "command": "pysealer.lockFile",
         "title": "Pysealer: Lock Current File"
+      },
+      {
+        "command": "pysealer.checkFile",
+        "title": "Pysealer: Check Current File"
       }
     ]
   },
