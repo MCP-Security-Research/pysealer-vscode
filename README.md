@@ -1,47 +1,47 @@
 # pysealer extension for Visual Studio Code
 
-Visual Studio Code extension for [pysealer](https://github.com/MCP-Security-Research/pysealer) - cryptographically sign your Python functions and classes to detect unauthorized code modifications.
+Visual Studio Code extension for [pysealer](https://github.com/MCP-Security-Research/pysealer)
+
+> 💡 **Cryptographically sign Python functions and classes for defense-in-depth security**
+
+This extension bundles pysealer version 0.9.0 for macOS, Windows, and Linux, with support for Python 3.10, 3.11, 3.12, 3.13, and 3.14. No additional installation is required—everything works out of the box.
+
+Pysealer helps maintain code integrity by automatically adding `@pysealer._<signature>()` decorators containing signed representations of an underlying Python functions code.
 
 ## Overview
 
-Pysealer helps you maintain code integrity by automatically adding cryptographic signatures to your Python functions and classes. Each function or class receives a unique `@pysealer` decorator containing an Ed25519 cryptographic signature that verifies both authorship and integrity, making it easy to detect unauthorized code modifications.
+The pysealer-vscode extension brings all the core functionality of the [pysealer CLI](https://github.com/MCP-Security-Research/pysealer) directly into Visual Studio Code. You can lock, check, and remove cryptographic decorators from Python functions and classes, ensuring code integrity and tamper detection without leaving your editor.
 
-This VS Code extension provides seamless integration with the pysealer CLI tool, allowing you to:
+Key features:
 
-- 🔒 **Lock files** with cryptographic signatures directly from the editor
-- ✅ **Verify integrity** of signed Python code in your workspace
-- 🚨 **Detect tampering** through automatic signature validation
+- 🔒 Lock files with Ed25519 cryptographic signatures
+- ✅ Verify integrity of signed Python code
+- 🚨 Detect unauthorized modifications automatically
+- 🧩 Seamless integration with the pysealer CLI tool
+
+All CLI commands are available from the command palette or context menu, making it easy to secure your Python codebase as you work.
 
 ## Features
 
-Whenever a Python file is saved, the pysealer locks are automatically added or updated for that file.
+The extension provides all core pysealer CLI commands directly in Visual Studio Code:
 
-### File Locking Command
+- `Initialize Project`: Set up pysealer and generate cryptographic keys
+- `Lock Current File`: Add cryptographic decorators to all functions and classes in the active Python file
+- `Check File Integrity`: Verify decorators and detect unauthorized modifications
+- `Remove Decorators`: Remove all pysealer decorators from a file or folder
 
-Right-click any Python file or use the command palette to lock files with pysealer signatures:
+To use these features, open the command palette (`Cmd+Shift+P` on macOS, `Ctrl+Shift+P` on Windows/Linux) and search for "Pysealer" to view all available commands. You can also right-click a Python file for context menu actions.
 
-- **Command**: `Pysealer: Lock Current File`
-- Automatically adds locks to all functions and classes in the active Python file
-- Provides instant feedback on success or failure
-
-## Requirements
-
-This extension bundles the pysealer CLI tool with support for **Python 3.10, 3.11, 3.12, and 3.13**.
-
-**No additional installation required!** The extension includes pysealer 0.9.0 and works out of the box.
-
-Before using the extension, initialize pysealer in your project:
-
-```bash
-python -m pysealer init  # Generates and saves cryptographic keys to .env
-```
-
-Or use the command palette: `Pysealer: Initialize Project`
+For best results, follow the setup steps in the [pysealer README](https://github.com/MCP-Security-Research/pysealer#getting-started) before using the extension.
 
 ## Contributing
 
-Contributions are welcome! If you have suggestions, bug reports, or want to help improve this extension, feel free to open an issue or submit a pull request.
+**🙌 Contributions are welcome!**
+
+Before contributing, make sure to review the [CONTRIBUTING.md](CONTRIBUTING.md) document.
+
+All ideas and contributions are appreciated—thanks for helping make pysealer-vscode better!
 
 ## License
 
-This extension is licensed under the MIT License. See [LICENSE](LICENSE) for details.
+pysealer-vscode is licensed under the MIT License. See [LICENSE](LICENSE) for details.
