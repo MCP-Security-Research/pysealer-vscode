@@ -28,7 +28,7 @@ Right-click any Python file or use the command palette to lock files with pyseal
 
 This extension bundles the pysealer CLI tool with support for **Python 3.10, 3.11, 3.12, and 3.13**.
 
-**No additional installation required!** The extension includes pysealer and works out of the box.
+**No additional installation required!** The extension includes pysealer 0.9.0 and works out of the box.
 
 Before using the extension, initialize pysealer in your project:
 
