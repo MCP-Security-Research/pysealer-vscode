@@ -40,7 +40,7 @@ To run Pysealer-vscode locally:
 ### Updating the Bundled Pysealer Version
 
 - Change the version in `requirements.txt` (e.g. `pysealer>=0.9.0`)
-- Run `npm install` to install dependencies
+- Change the version in `scripts/install_bundled_libs.py` (e.g. `pysealer>=0.9.0`)
 - Run `npm run bundle:python` to install pysealer and other libs into `bundled/libs/` (this runs `scripts/install_bundled_libs.py`)
 
 ### Making Releases to Pysealer-vscode
