@@ -67,7 +67,7 @@ def download_platform_specific_wheels(bundled_libs, requirements_file):
                     "--only-binary", ":all:",
                     "--python-version", py_version,
                     "--no-deps",  # Don't download dependencies (already handled)
-                    "pysealer>=0.9.0"
+                    "pysealer>=1.0.0"
                 ])
                 print(f"✓ Downloaded wheel for Python {py_version[0]}.{py_version[1:]} on {platform}")
                 

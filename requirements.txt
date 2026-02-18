@@ -3,4 +3,4 @@
 
 # Pysealer - the main tool
 # Update this version as needed to match your target pysealer version
-pysealer>=0.9.0
+pysealer>=1.0.0
